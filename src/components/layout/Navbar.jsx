@@ -1,0 +1,14 @@
+import { Menu } from 'lucide-react'
+export function Navbar({ title, onMenu }) {
+  return (
+    <header className="flex min-h-16 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6">
+      <div className="flex items-center gap-3">
+        <button className="rounded-md p-2 lg:hidden" onClick={onMenu} aria-label="Open navigation">
+          <Menu size={20} />
+        </button>
+        <h1 className="text-lg font-bold text-ink">{title}</h1>
+      </div>
+      <span className="text-sm text-slate-500">City Care Clinic</span>
+    </header>
+  )
+}

@@ -1,0 +1,106 @@
+import { useState } from 'react'
+import { Button } from '../ui/Button'
+import { Input } from '../ui/Input'
+import { Select } from '../ui/Select'
+import { useQueue } from '../../context/QueueProvider'
+import { recommendDoctor } from '../../lib/queueMath'
+export function EmergencyForm({ onClose, preselectedDoctor }) {
+  const { doctors, patients, addEmergency } = useQueue()
+  const recommended = recommendDoctor(doctors, patients)
+  const [form, setForm] = useState({
+    name: '',
+    age: '',
+    phone: '',
+    reason: '',
+    severity: 'urgent',
+    doctorId: preselectedDoctor || recommended?.id || doctors[0]?.id,
+  })
+  const change = (key, value) => setForm((v) => ({ ...v, [key]: value }))
+  return (
+    <div className="fixed inset-0 z-40 grid place-items-center bg-slate-900/30 p-4">
+      <form
+        className="w-full max-w-lg rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
+        onSubmit={(e) => {
+          e.preventDefault()
+          addEmergency({
+            ...form,
+            age: Number(form.age),
+            phone: form.phone,
+            reason: `${form.reason} (${form.severity})`,
+            doctorId: form.doctorId,
+          })
+          onClose()
+        }}
+      >
+        <h2 className="text-lg font-bold">Add emergency patient</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          The patient is added at the head of the selected queue.
+        </p>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <Input
+            id="emergency-name"
+            label="Name"
+            required
+            value={form.name}
+            onChange={(e) => change('name', e.target.value)}
+          />
+          <Input
+            id="emergency-age"
+            label="Age"
+            required
+            type="number"
+            min="0"
+            value={form.age}
+            onChange={(e) => change('age', e.target.value)}
+          />
+          <Input
+            id="emergency-phone"
+            label="Phone"
+            required
+            value={form.phone}
+            onChange={(e) => change('phone', e.target.value)}
+          />
+          <Select
+            id="severity"
+            label="Severity"
+            value={form.severity}
+            onChange={(e) => change('severity', e.target.value)}
+          >
+            <option value="urgent">Urgent</option>
+            <option value="critical">Critical</option>
+          </Select>
+          <label className="sm:col-span-2">
+            <span className="text-sm font-medium">Reason</span>
+            <textarea
+              required
+              className="mt-1 min-h-24 w-full rounded-md border border-slate-300 p-3 text-sm"
+              value={form.reason}
+              onChange={(e) => change('reason', e.target.value)}
+            />
+          </label>
+          <Select
+            id="emergency-doctor"
+            label="Assign doctor"
+            value={form.doctorId}
+            onChange={(e) => change('doctorId', e.target.value)}
+          >
+            {doctors.map((doctor) => (
+              <option key={doctor.id} value={doctor.id}>
+                {doctor.name} · {doctor.specialization}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <p className="mt-3 text-xs text-slate-500">
+          Recommendation: {recommended?.name} has the lowest estimated wait.
+        </p>
+        <div className="mt-6 flex justify-end gap-3">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit">Add emergency patient</Button>
+        </div>
+      </form>
+    </div>
+  )
+}

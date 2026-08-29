@@ -1,0 +1,89 @@
+import { Activity, Monitor } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { Button } from '../components/ui/Button'
+import { Input } from '../components/ui/Input'
+import { useAuth } from '../context/AuthContext'
+export function LoginPage() {
+  const [role, setRole] = useState('doctor')
+  const [identifier, setIdentifier] = useState('doctor@citycare.test')
+  const [password, setPassword] = useState('demo123')
+  const [error, setError] = useState('')
+  const { login } = useAuth()
+  const navigate = useNavigate()
+  const submit = async (e) => {
+    e.preventDefault()
+    setError('')
+    try {
+      const user = await login({ identifier, password, role })
+      navigate(user.role === 'doctor' ? '/doctor' : '/client')
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+  return (
+    <main className="grid min-h-screen place-items-center bg-canvas p-4">
+      <div className="w-full max-w-sm rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-6 flex items-center gap-2">
+          <span className="grid h-9 w-9 place-items-center rounded-md bg-brand text-white">
+            <Activity size={20} />
+          </span>
+          <span className="text-xl font-bold">OPD Flow</span>
+        </div>
+        <h1 className="text-2xl font-bold">Welcome back</h1>
+        <p className="mt-1 text-sm text-slate-500">Sign in to manage your clinic queue.</p>
+        <div className="mt-6 grid grid-cols-2 rounded-md bg-slate-100 p-1" role="tablist">
+          {['doctor', 'client'].map((item) => (
+            <button
+              key={item}
+              type="button"
+              role="tab"
+              aria-selected={role === item}
+              onClick={() => {
+                setRole(item)
+                setIdentifier(item === 'doctor' ? 'doctor@citycare.test' : '98765 43215')
+              }}
+              className={`min-h-10 rounded px-3 text-sm font-semibold capitalize ${role === item ? 'bg-white text-brand shadow-sm' : 'text-slate-500'}`}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+        <form className="mt-5 space-y-4" onSubmit={submit}>
+          <Input
+            id="identifier"
+            label={role === 'doctor' ? 'Email' : 'Phone'}
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
+            autoComplete="username"
+          />
+          <Input
+            id="password"
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            error={error}
+          />
+          <p className="text-xs text-slate-500">
+            Demo credentials:{' '}
+            {role === 'doctor' ? 'doctor@citycare.test / demo123' : '98765 43215 / demo123'}
+          </p>
+          <Button className="w-full" type="submit">
+            Log in
+          </Button>
+        </form>
+        <div className="mt-5 flex items-center justify-between text-xs">
+          <a href="#forgot" className="font-semibold text-brand">
+            Forgot password?
+          </a>
+          <Link to="/display" className="inline-flex items-center gap-1 font-semibold text-brand">
+            <Monitor size={14} />
+            TV display
+          </Link>
+        </div>
+      </div>
+    </main>
+  )
+}

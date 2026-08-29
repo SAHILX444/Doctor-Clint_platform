@@ -1,0 +1,70 @@
+import { useState } from 'react'
+import { Button } from '../../components/ui/Button'
+import { Card } from '../../components/ui/Card'
+import { Input } from '../../components/ui/Input'
+import { useQueue } from '../../context/QueueProvider'
+import { useToast } from '../../context/ToastContext'
+import { LoadingState } from '../../components/ui/LoadingState'
+export function AppointmentPage() {
+  const { client, doctors, loading } = useQueue()
+  const { notify } = useToast()
+  const [date, setDate] = useState('2025-04-28')
+  if (loading || !client) return <LoadingState />
+  const doctor = doctors.find((d) => d.id === client.doctorId)
+  return (
+    <div className="space-y-4 py-2">
+      <h1 className="text-2xl font-bold">Appointment</h1>
+      <Card className="p-5">
+        <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+          Current appointment
+        </p>
+        <h2 className="mt-3 text-xl font-bold">{doctor.name}</h2>
+        <p className="mt-1 text-sm text-slate-500">{doctor.specialization} · General Medicine</p>
+        <dl className="mt-5 grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <dt className="text-slate-500">Token</dt>
+            <dd className="mt-1 font-semibold">{client.token}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-500">Arrival time</dt>
+            <dd className="mt-1 font-semibold">9:30 AM</dd>
+          </div>
+          <div>
+            <dt className="text-slate-500">Room</dt>
+            <dd className="mt-1 font-semibold">{doctor.room}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-500">Department</dt>
+            <dd className="mt-1 font-semibold">Outpatient care</dd>
+          </div>
+        </dl>
+      </Card>
+      <Card className="p-5">
+        <h2 className="font-bold">Book / reschedule</h2>
+        <form
+          className="mt-4 space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault()
+            notify({
+              title: 'Appointment request saved',
+              message: 'The clinic team will confirm your new time.',
+              tone: 'success',
+            })
+          }}
+        >
+          <Input
+            id="appointment-date"
+            label="Preferred date"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+          <Input id="appointment-note" label="Note for the clinic" placeholder="Optional" />
+          <Button type="submit" className="w-full">
+            Request new time
+          </Button>
+        </form>
+      </Card>
+    </div>
+  )
+}

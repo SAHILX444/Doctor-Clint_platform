@@ -1,0 +1,69 @@
+import { useState } from 'react'
+import { ChevronDown, ChevronRight } from 'lucide-react'
+import { SectionHeading } from '../../components/ui/SectionHeading'
+import { StatusBadge } from '../../components/ui/StatusBadge'
+import { useQueue } from '../../context/QueueProvider'
+export function PatientsPage() {
+  const { patients, doctors } = useQueue()
+  const [expanded, setExpanded] = useState(null)
+  return (
+    <div className="space-y-6">
+      <SectionHeading
+        title="Patients"
+        description="Today's visits and the details needed for a smooth consultation."
+      />
+      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+        <table className="w-full min-w-[950px] text-left text-sm">
+          <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+            <tr>
+              {['', 'Token', 'Patient', 'ID', 'Age', 'Reason', 'Doctor', 'Status', 'Duration'].map(
+                (h) => (
+                  <th className="px-4 py-3" key={h}>
+                    {h}
+                  </th>
+                )
+              )}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-200">
+            {patients.map((p) => (
+              <>
+                <tr key={p.id} className="hover:bg-slate-50">
+                  <td className="px-4 py-3">
+                    <button
+                      className="rounded p-1"
+                      aria-label={`Show details for ${p.name}`}
+                      onClick={() => setExpanded(expanded === p.id ? null : p.id)}
+                    >
+                      {expanded === p.id ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3 font-bold">{p.token}</td>
+                  <td className="px-4 py-3 font-medium">{p.name}</td>
+                  <td className="px-4 py-3 text-slate-500">{p.id}</td>
+                  <td className="px-4 py-3">{p.age}</td>
+                  <td className="px-4 py-3">{p.reason}</td>
+                  <td className="px-4 py-3">{doctors.find((d) => d.id === p.doctorId)?.name}</td>
+                  <td className="px-4 py-3">
+                    <StatusBadge status={p.status} />
+                  </td>
+                  <td className="px-4 py-3">
+                    {p.durationSec ? `${Math.floor(p.durationSec / 60)}m` : '—'}
+                  </td>
+                </tr>
+                {expanded === p.id && (
+                  <tr key={`${p.id}-detail`}>
+                    <td colSpan="9" className="bg-slate-50 px-12 py-4 text-sm text-slate-600">
+                      <strong>Visit details:</strong> {p.reason}. No additional medical records are
+                      stored in this demo.
+                    </td>
+                  </tr>
+                )}
+              </>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
