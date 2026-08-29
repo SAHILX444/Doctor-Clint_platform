@@ -14,12 +14,20 @@ function reducer(state, action) {
     const doctor = snapshot.doctors.find((d) => d.id === patient?.doctorId)
     return patient && doctor ? etaMinutes(patient, activeQueue(snapshot.patients, patient.doctorId), doctor, Date.now()) : null
   }
+  const clientPosition = (snapshot) => {
+    const patient = snapshot.patients.find((p) => p.id === currentClientId)
+    return patient ? activeQueue(snapshot.patients, patient.doctorId).findIndex((item) => item.id === patient.id) + 1 : null
+  }
   const append = (next, item) => {
     const previousEta = clientEta(state)
     const nextEta = clientEta(next)
-    const notifications = previousEta !== null && nextEta !== null && previousEta !== nextEta
-      ? [{ id: `n-${Date.now()}`, type: 'eta', message: `Your estimated waiting time changed: ${previousEta} min → ${nextEta} min`, at: now, unread: true }, ...next.notifications]
-      : next.notifications
+    const previousPosition = clientPosition(state)
+    const nextPosition = clientPosition(next)
+    const notices = []
+    if (previousEta !== null && nextEta !== null && previousEta !== nextEta) notices.push({ id: `n-${Date.now()}-eta`, type: 'eta', message: `Your estimated waiting time changed: ${previousEta} min → ${nextEta} min`, at: now, unread: true })
+    if (previousPosition !== null && nextPosition !== null && previousPosition !== nextPosition) notices.push({ id: `n-${Date.now()}-position`, type: 'position', message: `Your queue position changed: #${previousPosition} → #${nextPosition}`, at: now, unread: true })
+    if (nextPosition !== null && nextPosition <= 1 && previousPosition > 1) notices.push({ id: `n-${Date.now()}-turn`, type: 'starting', message: "It's almost your turn. Please stay nearby.", at: now, unread: true })
+    const notifications = [...notices, ...next.notifications]
     return { ...next, notifications, events: [event(action.type, item, action), ...next.events].slice(0, 30) }
   }
   const update = (patientId, changes) => state.patients.map((p) => p.id === patientId ? { ...p, ...changes } : p)
