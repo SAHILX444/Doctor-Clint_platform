@@ -18,4 +18,10 @@ export const relativeTime = (date, now = Date.now()) => {
   return `${Math.floor(minutes / 60)}h ago`
 }
 
-export const dateLabel = (date = new Date()) => new Intl.DateTimeFormat('en-IN', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(new Date(date))
+export const dateLabel = (date = new Date()) =>
+  new Intl.DateTimeFormat('en-IN', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date(date))

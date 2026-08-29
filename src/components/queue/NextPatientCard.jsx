@@ -1,4 +1,30 @@
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { ETADisplay } from '../ui/ETADisplay'
-export function NextPatientCard({ patient, eta, onCall }) { return <Card className="p-5"><p className="text-xs font-bold uppercase tracking-wide text-slate-500">Next patient</p>{patient ? <><p className="mt-4 text-3xl font-bold">{patient.token}</p><p className="mt-1 text-lg font-semibold">{patient.name}</p><p className="mt-2 text-sm text-slate-500">Estimated wait: <ETADisplay minutes={eta} /></p><Button className="mt-5 w-full" onClick={onCall}>Call Patient</Button></> : <><p className="mt-4 font-semibold">Queue is clear</p><p className="mt-1 text-sm text-slate-500">No waiting patients are ready to call.</p><Button className="mt-5 w-full" disabled title="The queue is empty">Call Patient</Button></>}</Card> }
+export function NextPatientCard({ patient, eta, onCall }) {
+  return (
+    <Card className="p-5">
+      <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Next patient</p>
+      {patient ? (
+        <>
+          <p className="mt-4 text-3xl font-bold">{patient.token}</p>
+          <p className="mt-1 text-lg font-semibold">{patient.name}</p>
+          <p className="mt-2 text-sm text-slate-500">
+            Estimated wait: <ETADisplay minutes={eta} />
+          </p>
+          <Button className="mt-5 w-full" onClick={onCall}>
+            Call Patient
+          </Button>
+        </>
+      ) : (
+        <>
+          <p className="mt-4 font-semibold">Queue is clear</p>
+          <p className="mt-1 text-sm text-slate-500">No waiting patients are ready to call.</p>
+          <Button className="mt-5 w-full" disabled title="The queue is empty">
+            Call Patient
+          </Button>
+        </>
+      )}
+    </Card>
+  )
+}

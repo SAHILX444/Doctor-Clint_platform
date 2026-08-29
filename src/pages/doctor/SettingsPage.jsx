@@ -6,4 +6,83 @@ import { Select } from '../../components/ui/Select'
 import { SectionHeading } from '../../components/ui/SectionHeading'
 import { useQueue } from '../../context/QueueProvider'
 import { useToast } from '../../context/ToastContext'
-export function SettingsPage() { const { doctor, saveSettings } = useQueue(); const { notify } = useToast(); const [form, setForm] = useState({ name: doctor.name, specialization: doctor.specialization, room: doctor.room, avgConsultMin: doctor.avgConsultMin }); const set = (key, value) => setForm((v) => ({ ...v, [key]: value })); return <div className="max-w-2xl space-y-6"><SectionHeading title="Settings" description="Update your profile and queue defaults." /><Card className="p-5"><div className="grid gap-4 sm:grid-cols-2"><Input id="settings-name" label="Name" value={form.name} onChange={(e) => set('name', e.target.value)} /><Input id="settings-specialization" label="Specialization" value={form.specialization} onChange={(e) => set('specialization', e.target.value)} /><Input id="settings-room" label="Room number" value={form.room} onChange={(e) => set('room', e.target.value)} /><Input id="settings-duration" label="Default consultation duration (min)" type="number" min="1" value={form.avgConsultMin} onChange={(e) => set('avgConsultMin', Number(e.target.value))} /><Select id="settings-availability" label="Availability" value={doctor.status} onChange={(e) => saveSettings(doctor.id, { status: e.target.value })}><option value="available">Available</option><option value="consulting">Consulting</option><option value="on_break">On break</option><option value="offline">Offline</option></Select></div><div className="mt-6 border-t border-slate-200 pt-5"><p className="font-semibold">Notifications</p><label className="mt-3 flex min-h-10 items-center gap-3 text-sm"><input type="checkbox" defaultChecked className="h-4 w-4 accent-brand" /> Queue changes and emergency alerts</label><label className="flex min-h-10 items-center gap-3 text-sm"><input type="checkbox" defaultChecked className="h-4 w-4 accent-brand" /> Daily summary</label></div><Button className="mt-6" onClick={() => { saveSettings(doctor.id, { ...form, avgConsultMin: Number(form.avgConsultMin) }); notify({ title: 'Settings saved', message: 'Your profile and ETA defaults were updated.', tone: 'success' }) }}>Save changes</Button></Card></div> }
+export function SettingsPage() {
+  const { doctor, saveSettings } = useQueue()
+  const { notify } = useToast()
+  const [form, setForm] = useState({
+    name: doctor.name,
+    specialization: doctor.specialization,
+    room: doctor.room,
+    avgConsultMin: doctor.avgConsultMin,
+  })
+  const set = (key, value) => setForm((v) => ({ ...v, [key]: value }))
+  return (
+    <div className="max-w-2xl space-y-6">
+      <SectionHeading title="Settings" description="Update your profile and queue defaults." />
+      <Card className="p-5">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Input
+            id="settings-name"
+            label="Name"
+            value={form.name}
+            onChange={(e) => set('name', e.target.value)}
+          />
+          <Input
+            id="settings-specialization"
+            label="Specialization"
+            value={form.specialization}
+            onChange={(e) => set('specialization', e.target.value)}
+          />
+          <Input
+            id="settings-room"
+            label="Room number"
+            value={form.room}
+            onChange={(e) => set('room', e.target.value)}
+          />
+          <Input
+            id="settings-duration"
+            label="Default consultation duration (min)"
+            type="number"
+            min="1"
+            value={form.avgConsultMin}
+            onChange={(e) => set('avgConsultMin', Number(e.target.value))}
+          />
+          <Select
+            id="settings-availability"
+            label="Availability"
+            value={doctor.status}
+            onChange={(e) => saveSettings(doctor.id, { status: e.target.value })}
+          >
+            <option value="available">Available</option>
+            <option value="consulting">Consulting</option>
+            <option value="on_break">On break</option>
+            <option value="offline">Offline</option>
+          </Select>
+        </div>
+        <div className="mt-6 border-t border-slate-200 pt-5">
+          <p className="font-semibold">Notifications</p>
+          <label className="mt-3 flex min-h-10 items-center gap-3 text-sm">
+            <input type="checkbox" defaultChecked className="h-4 w-4 accent-brand" /> Queue changes
+            and emergency alerts
+          </label>
+          <label className="flex min-h-10 items-center gap-3 text-sm">
+            <input type="checkbox" defaultChecked className="h-4 w-4 accent-brand" /> Daily summary
+          </label>
+        </div>
+        <Button
+          className="mt-6"
+          onClick={() => {
+            saveSettings(doctor.id, { ...form, avgConsultMin: Number(form.avgConsultMin) })
+            notify({
+              title: 'Settings saved',
+              message: 'Your profile and ETA defaults were updated.',
+              tone: 'success',
+            })
+          }}
+        >
+          Save changes
+        </Button>
+      </Card>
+    </div>
+  )
+}

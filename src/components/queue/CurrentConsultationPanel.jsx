@@ -4,4 +4,48 @@ import { EmptyState } from '../ui/EmptyState'
 import { StatusBadge } from '../ui/StatusBadge'
 import { Button } from '../ui/Button'
 import { ConsultationTimer } from './ConsultationTimer'
-export function CurrentConsultationPanel({ patient, calledPatient, onStart, onComplete }) { return <Card className="border-l-4 border-l-brand p-5 sm:p-6"><div className="mb-4 flex items-center justify-between"><h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Current consultation</h2>{patient && <StatusBadge status={patient.status} />}</div>{patient ? <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div><div className="flex items-center gap-3"><UserRound className="text-brand" size={24} /><h3 className="text-2xl font-bold text-ink">{patient.name}</h3></div><p className="mt-2 text-sm text-slate-500">{patient.token} · {patient.id} · {patient.reason}</p><p className="mt-5 text-xs uppercase tracking-wide text-slate-500">Live duration</p><ConsultationTimer startedAt={patient.startedAt} /></div><div className="flex flex-wrap gap-2">{calledPatient && <span className="self-center text-xs text-slate-500">Finish the current consultation before starting another patient.</span>}<Button variant="secondary" onClick={onComplete}>Complete Consultation</Button></div></div> : <div>{calledPatient && <Button onClick={onStart}>Start Consultation</Button>}<EmptyState title="Nobody is in consultation" message="Call the next patient when you are ready." /></div>}</Card> }
+export function CurrentConsultationPanel({ patient, calledPatient, onStart, onComplete }) {
+  return (
+    <Card className="border-l-4 border-l-brand p-5 sm:p-6">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">
+          Current consultation
+        </h2>
+        {patient && <StatusBadge status={patient.status} />}
+      </div>
+      {patient ? (
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <UserRound className="text-brand" size={24} />
+              <h3 className="text-2xl font-bold text-ink">{patient.name}</h3>
+            </div>
+            <p className="mt-2 text-sm text-slate-500">
+              {patient.token} · {patient.id} · {patient.reason}
+            </p>
+            <p className="mt-5 text-xs uppercase tracking-wide text-slate-500">Live duration</p>
+            <ConsultationTimer startedAt={patient.startedAt} />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {calledPatient && (
+              <span className="self-center text-xs text-slate-500">
+                Finish the current consultation before starting another patient.
+              </span>
+            )}
+            <Button variant="secondary" onClick={onComplete}>
+              Complete Consultation
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div>
+          {calledPatient && <Button onClick={onStart}>Start Consultation</Button>}
+          <EmptyState
+            title="Nobody is in consultation"
+            message="Call the next patient when you are ready."
+          />
+        </div>
+      )}
+    </Card>
+  )
+}

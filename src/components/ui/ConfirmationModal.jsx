@@ -1,2 +1,35 @@
 import { Button } from './Button'
-export function ConfirmationModal({ title, message, confirmLabel = 'Confirm', onConfirm, onClose }) { return <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/30 p-4" role="presentation"><div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-sm" role="dialog" aria-modal="true" aria-labelledby="confirm-title"><h2 id="confirm-title" className="text-lg font-bold">{title}</h2><p className="mt-2 text-sm text-slate-600">{message}</p><div className="mt-6 flex justify-end gap-3"><Button variant="secondary" onClick={onClose}>Cancel</Button><Button variant="danger" onClick={onConfirm}>{confirmLabel}</Button></div></div></div> }
+export function ConfirmationModal({
+  title,
+  message,
+  confirmLabel = 'Confirm',
+  onConfirm,
+  onClose,
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/30 p-4"
+      role="presentation"
+    >
+      <div
+        className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-title"
+      >
+        <h2 id="confirm-title" className="text-lg font-bold">
+          {title}
+        </h2>
+        <p className="mt-2 text-sm text-slate-600">{message}</p>
+        <div className="mt-6 flex justify-end gap-3">
+          <Button variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={onConfirm}>
+            {confirmLabel}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}

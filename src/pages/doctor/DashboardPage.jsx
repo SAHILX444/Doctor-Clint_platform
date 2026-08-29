@@ -18,8 +18,153 @@ import { ConfirmationModal } from '../../components/ui/ConfirmationModal'
 import { EmergencyForm } from '../../components/forms/EmergencyForm'
 import { TransferForm } from '../../components/forms/TransferForm'
 export function DashboardPage() {
-  const q = useQueue(); const { notify } = useToast(); const [alert, setAlert] = useState(true); const [modal, setModal] = useState(null); const [emergency, setEmergency] = useState(false); const [transfer, setTransfer] = useState(null)
+  const q = useQueue()
+  const { notify } = useToast()
+  const [alert, setAlert] = useState(true)
+  const [modal, setModal] = useState(null)
+  const [emergency, setEmergency] = useState(false)
+  const [transfer, setTransfer] = useState(null)
   if (q.loading) return <LoadingState />
-  const patients = q.patients.filter((p) => p.doctorId === q.doctor.id); const queue = activeQueue(q.patients, q.doctor.id); const current = queue.find((p) => p.status === 'in_consultation'); const called = queue.find((p) => p.status === 'called'); const next = queue.find((p) => p.status === 'waiting'); const emergencyInQueue = queue.some((p) => p.priority === 'emergency'); const confirm = () => { if (modal.type === 'complete') { const seconds = modal.patient.startedAt ? Math.floor((Date.now() - new Date(modal.patient.startedAt).getTime()) / 1000) : 0; q.complete(modal.patient.id); notify({ title: 'Consultation completed', message: `Duration recorded: ${durationWords(seconds)}. Queue updated.`, tone: 'success' }) } else { q.noShow(modal.patient.id); notify({ title: 'Patient marked as no-show', message: 'Queue updated.', tone: 'success' }) }; setModal(null) }
-  return <div className="space-y-6"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="text-sm text-slate-500">{new Intl.DateTimeFormat('en-IN', { dateStyle: 'full' }).format(new Date())}</p><h1 className="mt-1 text-2xl font-bold">Good morning, {q.doctor.name}</h1></div><div className="flex flex-wrap items-end gap-3"><Select id="availability" label="Availability" value={q.doctor.status} onChange={(e) => q.setDoctorStatus(q.doctor.id, e.target.value)}><option value="available">Available</option><option value="consulting">Consulting</option><option value="on_break">On break</option><option value="offline">Offline</option></Select><Button onClick={() => setEmergency(true)}>+ Emergency Patient</Button></div></div>{alert && emergencyInQueue && <EmergencyAlert onDismiss={() => setAlert(false)} />}<section><SectionHeading title="Today's overview" /><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><StatCard label="Waiting" value={queue.filter((p) => p.status === 'waiting').length} icon={Users} /><StatCard label="Currently consulting" value={current ? current.token : '—'} icon={Activity} /><StatCard label="Completed today" value={patients.filter((p) => p.status === 'completed').length} icon={CheckCircle2} /><StatCard label="Avg consultation time" value={`${q.velocityFor(q.doctor.id).avgConsultMin.toFixed(1)} min`} icon={Clock3} /></div></section><div className="grid gap-6 xl:grid-cols-3"><div className="xl:col-span-2"><CurrentConsultationPanel patient={current} calledPatient={called} onStart={() => q.start(called.id)} onComplete={() => setModal({ type: 'complete', patient: current })} /></div><NextPatientCard patient={next} eta={next ? q.etaFor(next) : 0} onCall={() => { q.callNext(q.doctor.id); notify({ title: 'Patient called', message: `${next.token} has been called.` }) }} /></div><VelocityPanel velocity={q.velocityFor(q.doctor.id)} /><section><SectionHeading title="Live queue" description="Actions update the queue and client notifications immediately." /><QueueTable patients={patients} onCall={(p) => q.callNext(p.doctorId)} onStart={(p) => q.start(p.id)} onComplete={(p) => setModal({ type: 'complete', patient: p })} onNoShow={(p) => setModal({ type: 'noShow', patient: p })} onTransfer={setTransfer} /></section>{modal && <ConfirmationModal title={modal.type === 'complete' ? 'Complete consultation?' : 'Mark patient as no-show?'} message={modal.type === 'complete' ? 'This records the duration and moves the queue forward.' : 'The patient will leave the active queue.'} confirmLabel={modal.type === 'complete' ? 'Complete consultation' : 'Mark no-show'} onConfirm={confirm} onClose={() => setModal(null)} />}{emergency && <EmergencyForm onClose={() => { setEmergency(false); notify({ title: 'Emergency case added', message: 'Estimated waiting times have been recalculated.', tone: 'success' }) }} />}{transfer && <TransferForm patient={transfer} onClose={() => { setTransfer(null); notify({ title: 'Patient transferred', message: 'Both queues have been updated.' }) }} />}</div>
+  const patients = q.patients.filter((p) => p.doctorId === q.doctor.id)
+  const queue = activeQueue(q.patients, q.doctor.id)
+  const current = queue.find((p) => p.status === 'in_consultation')
+  const called = queue.find((p) => p.status === 'called')
+  const next = queue.find((p) => p.status === 'waiting')
+  const emergencyInQueue = queue.some((p) => p.priority === 'emergency')
+  const confirm = () => {
+    if (modal.type === 'complete') {
+      const seconds = modal.patient.startedAt
+        ? Math.floor((Date.now() - new Date(modal.patient.startedAt).getTime()) / 1000)
+        : 0
+      q.complete(modal.patient.id)
+      notify({
+        title: 'Consultation completed',
+        message: `Duration recorded: ${durationWords(seconds)}. Queue updated.`,
+        tone: 'success',
+      })
+    } else {
+      q.noShow(modal.patient.id)
+      notify({ title: 'Patient marked as no-show', message: 'Queue updated.', tone: 'success' })
+    }
+    setModal(null)
+  }
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <p className="text-sm text-slate-500">
+            {new Intl.DateTimeFormat('en-IN', { dateStyle: 'full' }).format(new Date())}
+          </p>
+          <h1 className="mt-1 text-2xl font-bold">Good morning, {q.doctor.name}</h1>
+        </div>
+        <div className="flex flex-wrap items-end gap-3">
+          <Select
+            id="availability"
+            label="Availability"
+            value={q.doctor.status}
+            onChange={(e) => q.setDoctorStatus(q.doctor.id, e.target.value)}
+          >
+            <option value="available">Available</option>
+            <option value="consulting">Consulting</option>
+            <option value="on_break">On break</option>
+            <option value="offline">Offline</option>
+          </Select>
+          <Button onClick={() => setEmergency(true)}>+ Emergency Patient</Button>
+        </div>
+      </div>
+      {alert && emergencyInQueue && <EmergencyAlert onDismiss={() => setAlert(false)} />}
+      <section>
+        <SectionHeading title="Today's overview" />
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard
+            label="Waiting"
+            value={queue.filter((p) => p.status === 'waiting').length}
+            icon={Users}
+          />
+          <StatCard
+            label="Currently consulting"
+            value={current ? current.token : '—'}
+            icon={Activity}
+          />
+          <StatCard
+            label="Completed today"
+            value={patients.filter((p) => p.status === 'completed').length}
+            icon={CheckCircle2}
+          />
+          <StatCard
+            label="Avg consultation time"
+            value={`${q.velocityFor(q.doctor.id).avgConsultMin.toFixed(1)} min`}
+            icon={Clock3}
+          />
+        </div>
+      </section>
+      <div className="grid gap-6 xl:grid-cols-3">
+        <div className="xl:col-span-2">
+          <CurrentConsultationPanel
+            patient={current}
+            calledPatient={called}
+            onStart={() => q.start(called.id)}
+            onComplete={() => setModal({ type: 'complete', patient: current })}
+          />
+        </div>
+        <NextPatientCard
+          patient={next}
+          eta={next ? q.etaFor(next) : 0}
+          onCall={() => {
+            q.callNext(q.doctor.id)
+            notify({ title: 'Patient called', message: `${next.token} has been called.` })
+          }}
+        />
+      </div>
+      <VelocityPanel velocity={q.velocityFor(q.doctor.id)} />
+      <section>
+        <SectionHeading
+          title="Live queue"
+          description="Actions update the queue and client notifications immediately."
+        />
+        <QueueTable
+          patients={patients}
+          onCall={(p) => q.callNext(p.doctorId)}
+          onStart={(p) => q.start(p.id)}
+          onComplete={(p) => setModal({ type: 'complete', patient: p })}
+          onNoShow={(p) => setModal({ type: 'noShow', patient: p })}
+          onTransfer={setTransfer}
+        />
+      </section>
+      {modal && (
+        <ConfirmationModal
+          title={modal.type === 'complete' ? 'Complete consultation?' : 'Mark patient as no-show?'}
+          message={
+            modal.type === 'complete'
+              ? 'This records the duration and moves the queue forward.'
+              : 'The patient will leave the active queue.'
+          }
+          confirmLabel={modal.type === 'complete' ? 'Complete consultation' : 'Mark no-show'}
+          onConfirm={confirm}
+          onClose={() => setModal(null)}
+        />
+      )}
+      {emergency && (
+        <EmergencyForm
+          onClose={() => {
+            setEmergency(false)
+            notify({
+              title: 'Emergency case added',
+              message: 'Estimated waiting times have been recalculated.',
+              tone: 'success',
+            })
+          }}
+        />
+      )}
+      {transfer && (
+        <TransferForm
+          patient={transfer}
+          onClose={() => {
+            setTransfer(null)
+            notify({ title: 'Patient transferred', message: 'Both queues have been updated.' })
+          }}
+        />
+      )}
+    </div>
+  )
 }

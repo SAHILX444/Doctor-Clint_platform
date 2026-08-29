@@ -1,3 +1,15 @@
 import { Bell, Clock3, Siren } from 'lucide-react'
 import { relativeTime } from '../../lib/format'
-export function NotificationItem({ item, now }) { const Icon = item.type === 'emergency' ? Siren : item.type === 'starting' ? Bell : Clock3; return <div className="flex gap-3 border-b border-slate-200 py-4 last:border-0"><Icon className="mt-1 shrink-0 text-brand" size={18} /><div className="flex-1"><p className="text-sm text-ink">{item.message}</p><p className="mt-1 text-xs text-slate-500">{relativeTime(item.at, now)}</p></div>{item.unread && <span className="mt-2 h-2 w-2 rounded-full bg-brand" aria-label="Unread" />}</div> }
+export function NotificationItem({ item, now }) {
+  const Icon = item.type === 'emergency' ? Siren : item.type === 'starting' ? Bell : Clock3
+  return (
+    <div className="flex gap-3 border-b border-slate-200 py-4 last:border-0">
+      <Icon className="mt-1 shrink-0 text-brand" size={18} />
+      <div className="flex-1">
+        <p className="text-sm text-ink">{item.message}</p>
+        <p className="mt-1 text-xs text-slate-500">{relativeTime(item.at, now)}</p>
+      </div>
+      {item.unread && <span className="mt-2 h-2 w-2 rounded-full bg-brand" aria-label="Unread" />}
+    </div>
+  )
+}

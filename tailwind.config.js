@@ -6,10 +6,10 @@ export default {
       colors: {
         canvas: '#F8FAFC',
         brand: { DEFAULT: '#0000B8', dark: '#00008F', light: '#E6E6F8' },
-        ink: '#111827'
+        ink: '#111827',
       },
-      fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] }
-    }
+      fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+    },
   },
-  plugins: []
+  plugins: [],
 }

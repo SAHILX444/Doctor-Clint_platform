@@ -1,1 +1,26 @@
-export function ClientQueueStrip({ queue, client }) { return <div className="flex gap-2 overflow-x-auto pb-1">{queue.slice(0, 5).map((patient) => <div key={patient.id} className={`min-w-24 rounded-md border p-3 text-center ${patient.id === client.id ? 'border-brand bg-brand-light' : 'border-slate-200 bg-white'}`}><p className="font-bold">{patient.token}</p><p className="mt-1 text-[10px] text-slate-500">{patient.id === client.id ? 'You' : patient.status === 'in_consultation' ? 'Currently consulting' : 'Waiting'}</p></div>)}</div> }
+export function ClientQueueStrip({ queue, client }) {
+  return (
+    <div className="space-y-2" aria-label="Queue order">
+      {queue.slice(0, 5).map((patient) => {
+        const isClient = patient.id === client.id
+        const status =
+          patient.status === 'in_consultation'
+            ? 'Currently consulting'
+            : isClient
+              ? 'You'
+              : 'Waiting'
+        return (
+          <div
+            key={patient.id}
+            className={`flex min-h-12 items-center justify-between rounded-md border px-4 py-3 ${isClient ? 'border-brand bg-brand-light' : 'border-slate-200 bg-white'}`}
+          >
+            <p className="font-bold">{patient.token}</p>
+            <p className={`text-sm ${isClient ? 'font-bold text-brand-dark' : 'text-slate-500'}`}>
+              {status}
+            </p>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
