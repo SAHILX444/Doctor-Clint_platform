@@ -9,7 +9,19 @@ const event = (type, message, meta = {}) => ({ id: `${Date.now()}-${Math.random(
 
 function reducer(state, action) {
   const now = new Date().toISOString()
-  const append = (next, item) => ({ ...next, events: [event(action.type, item, action), ...next.events].slice(0, 30) })
+  const clientEta = (snapshot) => {
+    const patient = snapshot.patients.find((p) => p.id === currentClientId)
+    const doctor = snapshot.doctors.find((d) => d.id === patient?.doctorId)
+    return patient && doctor ? etaMinutes(patient, activeQueue(snapshot.patients, patient.doctorId), doctor, Date.now()) : null
+  }
+  const append = (next, item) => {
+    const previousEta = clientEta(state)
+    const nextEta = clientEta(next)
+    const notifications = previousEta !== null && nextEta !== null && previousEta !== nextEta
+      ? [{ id: `n-${Date.now()}`, type: 'eta', message: `Your estimated waiting time changed: ${previousEta} min → ${nextEta} min`, at: now, unread: true }, ...next.notifications]
+      : next.notifications
+    return { ...next, notifications, events: [event(action.type, item, action), ...next.events].slice(0, 30) }
+  }
   const update = (patientId, changes) => state.patients.map((p) => p.id === patientId ? { ...p, ...changes } : p)
   switch (action.type) {
     case 'HYDRATE': return { ...state, patients: action.patients, doctors: action.doctors, loading: false }
@@ -21,6 +33,7 @@ function reducer(state, action) {
     }
     case 'START_CONSULTATION': {
       const patient = state.patients.find((p) => p.id === action.patientId)
+      if (state.patients.some((p) => p.doctorId === patient?.doctorId && p.status === 'in_consultation')) return state
       return append({ ...state, patients: update(action.patientId, { status: 'in_consultation', startedAt: now }), doctors: state.doctors.map((d) => d.id === patient?.doctorId ? { ...d, status: 'consulting' } : d) }, `${patient?.token} consultation started`)
     }
     case 'COMPLETE_CONSULTATION': {
@@ -34,7 +47,9 @@ function reducer(state, action) {
       return append({ ...state, patients: update(action.patientId, { status: 'no_show' }) }, `${patient?.token} marked as no-show`)
     }
     case 'ADD_EMERGENCY': {
-      const item = { ...action.payload, id: `P-${Date.now()}`, token: `A-${110 + state.patients.length}`, priority: 'emergency', status: 'waiting', arrivedAt: now }
+      const doctorPatients = state.patients.filter((p) => p.doctorId === action.payload.doctorId)
+      const latestToken = Math.max(109, ...doctorPatients.map((p) => Number(p.token.split('-')[1]) || 0))
+      const item = { ...action.payload, id: `P-${Date.now()}`, token: `A-${latestToken + 1}`, priority: 'emergency', status: 'waiting', arrivedAt: now }
       return append({ ...state, patients: [item, ...state.patients], notifications: [{ id: `n-${Date.now()}`, type: 'emergency', message: 'An emergency case was added. Your estimated wait may change.', at: now, unread: true }, ...state.notifications] }, `Emergency ${item.token} added — queue ETAs recalculated`)
     }
     case 'TRANSFER_PATIENT': {
