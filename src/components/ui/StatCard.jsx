@@ -1,0 +1,2 @@
+import { Card } from './Card'
+export function StatCard({ label, value, hint, icon: Icon }) { return <Card className="p-4"><div className="flex items-center justify-between text-slate-500"><span className="text-sm">{label}</span>{Icon && <Icon size={18} aria-hidden="true" />}</div><p className="mt-3 text-2xl font-bold text-ink">{value}</p>{hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}</Card> }
